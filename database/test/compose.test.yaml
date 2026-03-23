@@ -1,22 +1,24 @@
 services:
   db:
-    container_name: demons_postgres
+    container_name: ${POSTGRES_DB}
     image: postgres
-    env_file: ../.env
+    env_file: ../../.env
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /data/postgres
-      POSTGRES_DB: bank
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db:/data/postgres
+      - ../utils/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../test/seed.sql:/docker-entrypoint-initdb.d/seed.sql
     ports:
       - "5332:5432"
     networks:
       - db
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 30s
       timeout: 10s
       retries: 5
